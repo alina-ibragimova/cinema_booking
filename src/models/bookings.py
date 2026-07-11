@@ -28,3 +28,6 @@ class Bookint(Base):
     user: Mapped["User"] = relationship(back_populates="bookings")
     showtime: Mapped["Showtime"] = relationship(back_populates="bookings")
     seat: Mapped["Seat"] = relationship(back_populates="bookings")
+
+
+    
