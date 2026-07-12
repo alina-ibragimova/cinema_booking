@@ -10,12 +10,14 @@ class Movie(Base):
     description: Mapped[str] = mapped_column(Text, nullable=True)
     duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
     showtimes: Mapped[list["Showtime"]] = relationship(back_populates="movie")
+    bookings: Mapped[list["Booking"]] = relationship(back_populates="user")
 
 class Hall(Base):
     __tablename__ = "halls"
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     showtimes: Mapped[list["Showtime"]] = relationship(back_populates="hall")
+    seats: Mapped[list["Seat"]] = relationship(back_populates="hall")
 
 class Showtime(Base):
     __tablename__ = "showtime"
@@ -25,3 +27,4 @@ class Showtime(Base):
     hall_id: Mapped[int] = mapped_column(ForeignKey("halls.id"), nullable=False)
     movie: Mapped["Movie"] = relationship(back_populates="showtimes")
     hall: Mapped["Hall"] = relationship(back_populates="showtimes")
+    bookings: Mapped[list["Booking"]] = relationship(back_populates="showtimes")
