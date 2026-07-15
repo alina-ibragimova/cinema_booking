@@ -1,1 +1,34 @@
+# 1. Секреты и конфигурации (САМОЕ ВАЖНОЕ)
 .env
+.env.*
+!.env.example
+
+# 2. Виртуальное окружение
+venv/
+.venv/
+env/
+
+# 3. Кэш Python и откомпилированные файлы
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 4. Кэш тестов (pytest)
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# 5. Настройки редакторов кода (PyCharm, VS Code)
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 6. Системные файлы macOS / Windows
+.DS_Store
+Thumbs.db
+
+# 7. Базы данных (на случай локальных тестов с SQLite)
+*.sqlite3
+*.db
