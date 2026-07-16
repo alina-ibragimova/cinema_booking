@@ -11,3 +11,5 @@ class BaseRepository[ModelType, SchemaType: BaseModel]:
         query = select(self.model).where(self.model.id == id)
         result = await self.session.execute(query)
         return result.scalars().first()
+    
+    
