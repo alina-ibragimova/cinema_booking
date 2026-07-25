@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.repositories.booking import BookingRepository
 from src.schemas.booking import BookingCreate
-from src.models.booking import Booking
+from src.models.bookings import Booking
 
 class BookingService:
     @staticmethod

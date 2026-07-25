@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.repositories.base import BaseRepository
-from src.models.booking import Booking 
+from src.models.bookinga import Booking 
 from src.schemas.booking import BookingCreate
 
 

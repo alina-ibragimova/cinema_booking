@@ -16,9 +16,9 @@ class Seat(Base):
     hall_id: Mapped[int] = mapped_column(ForeignKey("halls.id",ondelete="CASCADE"))
     hall: Mapped["Hall"] = relationship(back_populates="seats")
     bookings: Mapped[list["Booking"]] = relationship(back_populates="seat")
-    __table_args__ = (UniqueConstraint("hall_id", "row", "number", name = "uq_hall_row_number"))
+    __table_args__ = (UniqueConstraint("hall_id", "row", "number", name = "uq_hall_row_number"),)
 
-class Bookint(Base):
+class Booking(Base):
     __tablename__ = "booking"
     id: Mapped[int] = mapped_column(primary_key=True, index = True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)

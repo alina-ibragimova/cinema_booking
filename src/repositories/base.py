@@ -11,7 +11,7 @@ class BaseRepository[ModelType, SchemaType: BaseModel]:
     async def get_by_id(self, id: int) -> ModelType | None:
         query = select(self.model).where(self.model.id == id)
         result = await self.session.execute(query)
-        return result.scalar_one()
+        return result.scalar_one_or_none()
     
     async def get_all(self, skip: int = 0, limit: int= 100) -> Sequence[ModelType]:
         query = select(self.model).offset(skip).limit(limit)
