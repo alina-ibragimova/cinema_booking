@@ -25,3 +25,13 @@ class ShowtimeCreate(ShowtimeBase):
 class ShowtimeRead(ShowtimeBase):
     id: int
     model_config = ConfigDict(from_attributes=True)
+
+class HallBase(BaseModel):
+    name: str = Field(..., min_length=1, max_length=50)
+
+class HallCreate(HallBase):
+    pass  
+
+class HallRead(HallBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)

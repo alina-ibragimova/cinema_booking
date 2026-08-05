@@ -13,3 +13,11 @@ class UserRepository(BaseRepository[User, UserCreate]):
         query = select(self.model).where(self.model.email == email)
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
+
+    async def create_user_safe(self, data: dict) -> User | None:
+        try:
+            return await self.create_from_dict(data)
+        except IntegrityError:
+            await self.session.rollback()
+            return None
+ 

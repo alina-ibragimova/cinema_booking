@@ -1,9 +1,10 @@
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.repositories.base import BaseRepository
-from src.models.bookinga import Booking 
-from src.schemas.booking import BookingCreate
+from src.repositories import BaseRepository
+from src.models import Booking 
+from src.schemas import BookingCreate
 
 
 class BookingRepository(BaseRepository[Booking, BookingCreate]):
@@ -23,3 +24,10 @@ class BookingRepository(BaseRepository[Booking, BookingCreate]):
         )
         result = await self.session.execute(query)
         return result.scalar_one_or_none() is not None
+
+    async def create_booking_safe(self, data: dict) -> Booking | None:
+        try:
+            return await self.create_from_dict(data)
+        except IntegrityError:
+            await self.session.rollback()
+            return None
