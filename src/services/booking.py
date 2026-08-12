@@ -42,7 +42,9 @@ class BookingService:
         booking_dict = booking_data.model_dump()
         booking_dict["user_id"] = user_id
         booking_dict["status"] = BookingStatus.PENDING
-        new_booking = await self.repo.create_from_dict(booking_dict)
+        new_booking = await self.repo.create_booking_safe(booking_dict)
+        if new_booking is None:
+            raise HTTPException(status_code=409, detail="Seat was taken during booking (race condition)")
         return new_booking
 
     async def get_user_bookings(self, user_id: int) -> list[Booking]:

@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.repositories import BaseRepository
-from src.models import Booking 
+from src.models import Booking, BookingStatus
 from src.schemas import BookingCreate
 
 
@@ -16,11 +16,11 @@ class BookingRepository(BaseRepository[Booking, BookingCreate]):
         result = await self.session.execute(query)
         return result.scalars().all()
     
-    async def is_seat_taken(self, session_id: int, seat_number: int) -> bool:
+    async def is_seat_taken(self, showtime_id: int, seat_id: int) -> bool:
         query = select(self.model).where(
-            self.model.session_id == session_id,
-            self.model.seat_number == seat_number,
-            self.model.status == "active"
+            self.model.showtime_id == showtime_id,
+            self.model.seat_id == seat_id,
+            self.model.status != BookingStatus.CANCELLED,
         )
         result = await self.session.execute(query)
         return result.scalar_one_or_none() is not None

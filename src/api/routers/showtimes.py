@@ -1,7 +1,7 @@
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from repositories import HallRepository, MovieRepository, ShowtimeRepository
+from src.repositories import HallRepository, MovieRepository, ShowtimeRepository
 from src.api.dependencies import get_current_admin_user
 from src.database import get_db
 from src.schemas import ShowtimeCreate, ShowtimeRead

@@ -35,3 +35,9 @@ class BaseRepository[ModelType, SchemaType: BaseModel]:
         query = delete(self.model).where(self.model.id==id)
         await self.session.execute(query)
         await self.session.commit()
+    
+    async def create_from_dict(self, data: dict[str, Any]) -> ModelType:
+        query = insert(self.model).values(**data).returning(self.model)
+        result = await self.session.execute(query)
+        await self.session.commit()
+        return result.scalar_one()

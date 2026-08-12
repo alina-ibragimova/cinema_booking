@@ -9,7 +9,7 @@ from src.services import HallService
 from src.repositories import HallRepository
 router = APIRouter(prefix="/halls", tags=["Залы"])
  
-def get_hall_service(db: AsyncSession=Depends(get_db_session))->HallService:
+def get_hall_service(db: AsyncSession=Depends(get_db))->HallService:
     return HallService(HallRepository(db))
 
 @router.get("/", response_model=list[HallRead])
