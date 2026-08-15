@@ -31,3 +31,12 @@ class BookingRepository(BaseRepository[Booking, BookingCreate]):
         except IntegrityError:
             await self.session.rollback()
             return None
+
+    async def get_taken_seat_ids(self, showtime_id: int) -> set[int]:
+        result = await self.session.execute(
+            select(Booking.seat_id).where(
+                Booking.showtime_id == showtime_id,
+                Booking.status != BookingStatus.CANCELLED,
+            )
+        )
+        return set(result.scalars().all()) 

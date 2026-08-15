@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CINEMA / BOOKING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0b0e14;
+    --surface: #12161f;
+    --surface-2: #1a2029;
+    --line: #262d3a;
+    --text: #f1eee6;
+    --text-muted: #8a93a6;
+    --accent: #e8a33d;      /* marquee amber */
+    --accent-dim: #6b5326;
+    --danger: #d1554a;
+    --success: #4f9a6e;
+    --radius: 10px;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(232,163,61,0.08), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    padding-bottom:80px;
+  }
+  h1,h2,h3,.display{
+    font-family:'Bebas Neue',sans-serif;
+    letter-spacing:0.04em;
+    font-weight:400;
+    margin:0;
+  }
+  .mono{font-family:var(--mono);}
+  a{color:inherit;}
+  ::selection{background:var(--accent);color:#1a1200;}
+
+  /* sprocket strip */
+  .sprockets{
+    height:14px;
+    background-image: radial-gradient(circle, var(--bg) 3px, transparent 3.5px);
+    background-size: 22px 14px;
+    background-position: 10px 50%;
+    background-color: var(--surface-2);
+  }
+
+  header{
+    background:var(--surface-2);
+    border-bottom:1px solid var(--line);
+  }
+  .header-inner{
+    max-width:1080px;margin:0 auto;padding:18px 24px;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:baseline;gap:10px;}
+  .brand .display{font-size:30px;color:var(--text);}
+  .brand .display span{color:var(--accent);}
+  .brand-sub{font-size:11px;color:var(--text-muted);letter-spacing:0.12em;text-transform:uppercase;}
+
+  .header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .api-config{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);}
+  .api-config input{
+    background:var(--surface);border:1px solid var(--line);border-radius:6px;
+    color:var(--text-muted);font-family:var(--mono);font-size:12px;padding:5px 8px;width:210px;
+  }
+  .api-config input:focus{outline:none;border-color:var(--accent);color:var(--text);}
+
+  .pill{
+    padding:6px 12px;border-radius:20px;font-size:12px;border:1px solid var(--line);
+    color:var(--text-muted);display:flex;align-items:center;gap:6px;
+  }
+  .pill .dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted);}
+  .pill.on{border-color:var(--success);color:var(--success);}
+  .pill.on .dot{background:var(--success);}
+
+  button{
+    font-family:'Inter',sans-serif;font-weight:600;font-size:13px;
+    border-radius:7px;border:1px solid var(--line);
+    background:var(--surface);color:var(--text);
+    padding:8px 16px;cursor:pointer;transition:all .15s ease;
+  }
+  button:hover{border-color:var(--accent);}
+  button:disabled{opacity:.45;cursor:not-allowed;}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#1a1200;}
+  button.primary:hover{filter:brightness(1.08);}
+  button.ghost{background:transparent;}
+  button.danger-btn{color:var(--danger);}
+  button.danger-btn:hover{border-color:var(--danger);}
+  button.small{padding:5px 10px;font-size:12px;}
+
+  main{max-width:1080px;margin:0 auto;padding:32px 24px;}
+  section{margin-bottom:44px;}
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+  .section-head h2{font-size:26px;}
+  .eyebrow{font-size:11px;color:var(--accent);letter-spacing:0.16em;text-transform:uppercase;margin-bottom:2px;display:block;}
+
+  .empty{
+    border:1px dashed var(--line);border-radius:var(--radius);padding:28px;
+    color:var(--text-muted);font-size:14px;text-align:center;
+  }
+  .msg{
+    padding:10px 14px;border-radius:7px;font-size:13px;margin-bottom:14px;
+    border:1px solid var(--line);
+  }
+  .msg.error{border-color:var(--danger);color:var(--danger);background:rgba(209,85,74,0.08);}
+  .msg.ok{border-color:var(--success);color:var(--success);background:rgba(79,154,110,0.08);}
+
+  /* movies grid */
+  .movies-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;}
+  .movie-card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    overflow:hidden;cursor:pointer;transition:transform .15s ease, border-color .15s ease;
+  }
+  .movie-card:hover{transform:translateY(-3px);border-color:var(--accent);}
+  .movie-card.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+  .poster{
+    height:150px;display:flex;align-items:center;justify-content:center;position:relative;
+  }
+  .poster .letter{font-family:'Bebas Neue',sans-serif;font-size:64px;color:rgba(255,255,255,0.85);}
+  .movie-body{padding:12px 14px;}
+  .movie-body .title{font-size:15px;font-weight:600;line-height:1.3;margin-bottom:4px;}
+  .movie-body .meta{font-size:12px;color:var(--text-muted);font-family:var(--mono);}
+
+  /* showtimes */
+  .showtime-chips{display:flex;flex-wrap:wrap;gap:10px;}
+  .chip{
+    background:var(--surface);border:1px solid var(--line);border-radius:8px;
+    padding:10px 14px;cursor:pointer;font-family:var(--mono);font-size:13px;
+    display:flex;flex-direction:column;gap:2px;transition:border-color .15s ease;
+  }
+  .chip:hover{border-color:var(--accent);}
+  .chip.active{border-color:var(--accent);background:var(--surface-2);}
+  .chip .time{font-size:16px;color:var(--text);}
+  .chip .hall{color:var(--text-muted);font-size:11px;}
+
+  /* booking form */
+  .booking-box{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px;display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;
+  }
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field label{font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);}
+  .field input{
+    background:var(--bg);border:1px solid var(--line);border-radius:7px;
+    color:var(--text);padding:9px 12px;font-family:var(--mono);font-size:14px;width:140px;
+  }
+  .field input:focus{outline:none;border-color:var(--accent);}
+  .field .hint{font-size:11px;color:var(--text-muted);max-width:260px;}
+
+  /* seat map */
+  .seat-box{flex-direction:column;align-items:stretch;gap:18px;}
+  .screen{
+    height:6px;margin:0 auto 6px;width:70%;
+    background:linear-gradient(90deg, transparent, var(--accent-dim), var(--accent), var(--accent-dim), transparent);
+    border-radius:50%;
+    box-shadow:0 8px 24px -6px rgba(232,163,61,0.35);
+  }
+  .screen-label{
+    text-align:center;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;
+    color:var(--text-muted);margin-bottom:18px;
+  }
+  .seat-map-wrap{display:flex;flex-direction:column;gap:6px;align-items:center;}
+  .seat-row{display:flex;align-items:center;gap:8px;}
+  .row-label{width:18px;font-family:var(--mono);font-size:11px;color:var(--text-muted);text-align:right;}
+  .seat-btn{
+    width:26px;height:26px;border-radius:6px 6px 9px 9px;
+    border:1px solid var(--line);background:var(--surface);
+    color:var(--text-muted);font-family:var(--mono);font-size:10px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    transition:all .12s ease;padding:0;
+  }
+  .seat-btn:hover:not(:disabled){border-color:var(--accent);color:var(--text);transform:translateY(-1px);}
+  .seat-btn.selected{background:var(--accent);border-color:var(--accent);color:#1a1200;font-weight:700;}
+  .seat-btn.taken{
+    background:var(--surface-2);border-color:var(--line);color:var(--text-muted);
+    opacity:.45;cursor:not-allowed;position:relative;
+  }
+  .seat-btn.taken::after{
+    content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(135deg, var(--danger) 0, var(--danger) 1px, transparent 1px, transparent 5px);
+    opacity:.5;border-radius:inherit;
+  }
+  .legend-swatch.taken{
+    background:
+      repeating-linear-gradient(135deg, var(--danger) 0, var(--danger) 1px, transparent 1px, transparent 4px),
+      var(--surface-2);
+    border-color:var(--line);
+  }
+  .seat-legend{display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--text-muted);margin-top:6px;}
+  .seat-legend span{display:flex;align-items:center;gap:6px;}
+  .legend-swatch{width:12px;height:12px;border-radius:3px;border:1px solid var(--line);background:var(--surface);}
+  .legend-swatch.selected{background:var(--accent);border-color:var(--accent);}
+  .booking-footer{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    border-top:1px solid var(--line);padding-top:14px;
+  }
+  .selected-seat{font-size:14px;color:var(--text);}
+
+  /* auth */
+  .auth-tabs{display:flex;gap:4px;margin-bottom:16px;}
+  .auth-tab{
+    padding:7px 14px;font-size:13px;cursor:pointer;color:var(--text-muted);
+    border-bottom:2px solid transparent;
+  }
+  .auth-tab.active{color:var(--accent);border-color:var(--accent);}
+  .auth-form{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px;max-width:360px;display:flex;flex-direction:column;gap:12px;
+  }
+  .auth-form input{
+    background:var(--bg);border:1px solid var(--line);border-radius:7px;
+    color:var(--text);padding:10px 12px;font-size:14px;
+  }
+  .auth-form input:focus{outline:none;border-color:var(--accent);}
+
+  /* ticket stub — signature element */
+  .tickets-wrap{display:flex;flex-direction:column;gap:14px;}
+  .ticket{
+    display:grid;grid-template-columns:1fr auto;
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .ticket-main{padding:16px 18px;}
+  .ticket-main .route{font-size:12px;color:var(--text-muted);font-family:var(--mono);margin-bottom:6px;}
+  .ticket-main .row{display:flex;gap:22px;flex-wrap:wrap;}
+  .ticket-main .field-lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;}
+  .ticket-main .field-val{font-family:var(--mono);font-size:16px;}
+  .ticket-stub{
+    position:relative;
+    width:120px;background:var(--surface-2);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    border-left:1px dashed var(--line);
+  }
+  .ticket-stub::before,.ticket-stub::after{
+    content:"";position:absolute;width:16px;height:16px;border-radius:50%;
+    background:var(--bg);left:-8px;
+  }
+  .ticket-stub::before{top:-8px;}
+  .ticket-stub::after{bottom:-8px;}
+  .status-badge{
+    font-size:10px;padding:4px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:0.06em;
+    border:1px solid var(--line);
+  }
+  .status-badge.pending{color:var(--accent);border-color:var(--accent);}
+  .status-badge.confirmed{color:var(--success);border-color:var(--success);}
+  .status-badge.cancelled{color:var(--text-muted);}
+
+  footer{
+    text-align:center;color:var(--text-muted);font-size:12px;padding:24px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <h1 class="display">CINEMA<span>/</span>BOOKING</h1>
+    </div>
+    <div class="header-right">
+      <div class="api-config">
+        <span>API</span>
+        <input id="apiBase" type="text" value="http://localhost:8000" spellcheck="false" />
+      </div>
+      <span id="authPill" class="pill"><span class="dot"></span> Гость</span>
+      <button id="authToggleBtn" class="small">Войти</button>
+      <button id="logoutBtn" class="small ghost" style="display:none;">Выйти</button>
+    </div>
+  </div>
+  <div class="sprockets"></div>
+</header>
+
+<main>
+
+  <section id="authSection" style="display:none;">
+    <div class="section-head"><div><span class="eyebrow">Доступ</span><h2>Вход или регистрация</h2></div></div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" data-tab="login">Вход</div>
+      <div class="auth-tab" data-tab="register">Регистрация</div>
+    </div>
+    <div id="authMsg"></div>
+
+    <form id="loginForm" class="auth-form">
+      <input type="email" id="loginEmail" placeholder="email@example.com" required />
+      <input type="password" id="loginPassword" placeholder="Пароль" required />
+      <button type="submit" class="primary">Войти</button>
+    </form>
+
+    <form id="registerForm" class="auth-form" style="display:none;">
+      <input type="email" id="regEmail" placeholder="email@example.com" required />
+      <input type="password" id="regPassword" placeholder="Пароль (мин. 8 символов)" minlength="8" required />
+      <button type="submit" class="primary">Создать аккаунт</button>
+    </form>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div><span class="eyebrow">Сейчас в прокате</span><h2>Фильмы</h2></div>
+      <button id="refreshMoviesBtn" class="small ghost">Обновить</button>
+    </div>
+    <div id="moviesMsg"></div>
+    <div id="moviesGrid" class="movies-grid"></div>
+  </section>
+
+  <section id="showtimesSection" style="display:none;">
+    <div class="section-head">
+      <div><span class="eyebrow" id="showtimesEyebrow">Сеансы</span><h2 id="showtimesTitle">—</h2></div>
+      <button id="closeShowtimesBtn" class="small ghost">Закрыть</button>
+    </div>
+    <div id="showtimesMsg"></div>
+    <div id="showtimeChips" class="showtime-chips"></div>
+  </section>
+
+  <section id="bookingSection" style="display:none;">
+    <div class="section-head"><div><span class="eyebrow">Шаг 2</span><h2>Выбор места</h2></div></div>
+    <div id="bookingMsg"></div>
+    <div class="booking-box seat-box">
+      <div id="seatMapWrap" class="seat-map-wrap">
+        <div class="empty">Загрузка схемы зала…</div>
+      </div>
+      <div class="booking-footer">
+        <div class="selected-seat mono" id="selectedSeatLabel">Место не выбрано</div>
+        <button id="confirmBookingBtn" class="primary" disabled>Забронировать</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div><span class="eyebrow">Ваш профиль</span><h2>Мои билеты</h2></div>
+      <button id="refreshBookingsBtn" class="small ghost">Обновить</button>
+    </div>
+    <div id="bookingsMsg"></div>
+    <div id="bookingsWrap" class="tickets-wrap"></div>
+  </section>
+
+</main>
+
+<footer>Cinema Booking API — учебный клиент. Хранит токен только в памяти вкладки.</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- state (in-memory only, no storage APIs) ----------
+  let state = {
+    token: null,
+    userEmail: null,
+    movies: [],
+    halls: {},          // id -> name
+    activeMovieId: null,
+    activeShowtime: null,
+    activeHall: null,
+    selectedSeatId: null,
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const apiBaseInput = $("apiBase");
+  const base = () => apiBaseInput.value.replace(/\/+$/, "");
+
+  function letterFor(title){ return (title || "?").trim().charAt(0).toUpperCase(); }
+  function hueFor(str){
+    let h = 0;
+    for (let i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) % 360; }
+    return h;
+  }
+  function posterStyle(title){
+    const h = hueFor(title || "movie");
+    return `background: linear-gradient(155deg, hsl(${h} 45% 22%), hsl(${(h+40)%360} 40% 12%));`;
+  }
+  function fmtTime(iso){
+    try{
+      const d = new Date(iso);
+      return d.toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+    }catch(e){ return iso; }
+  }
+  function statusLabel(s){
+    return {pending:"Ожидает", confirmed:"Подтверждено", cancelled:"Отменено"}[s] || s;
+  }
+  function showMsg(el, text, kind){
+    el.innerHTML = text ? `<div class="msg ${kind}">${text}</div>` : "";
+  }
+
+  async function api(path, {method="GET", body=null, form=false, auth=false} = {}){
+    const headers = {};
+    let payload = body;
+    if (body && !form){
+      headers["Content-Type"] = "application/json";
+      payload = JSON.stringify(body);
+    }
+    if (auth){
+      if (!state.token) throw {detail: "Требуется вход в аккаунт"};
+      headers["Authorization"] = "Bearer " + state.token;
+    }
+    let res;
+    try{
+      res = await fetch(base() + path, {method, headers, body: payload});
+    }catch(e){
+      throw {detail: "Не удалось подключиться к API по адресу " + base() + ". Проверьте, что сервер запущен и адрес указан верно."};
+    }
+    let data = null;
+    try{ data = await res.json(); }catch(e){ /* no body */ }
+    if (!res.ok){
+      const detail = (data && data.detail) ? (Array.isArray(data.detail) ? data.detail.map(d=>d.msg).join("; ") : data.detail) : `Ошибка ${res.status}`;
+      throw {detail, status: res.status};
+    }
+    return data;
+  }
+
+  // ---------- auth ----------
+  function setAuthUI(){
+    const pill = $("authPill");
+    if (state.token){
+      pill.classList.add("on");
+      pill.innerHTML = `<span class="dot"></span> ${state.userEmail || "В сети"}`;
+      $("authToggleBtn").style.display = "none";
+      $("logoutBtn").style.display = "inline-block";
+      $("authSection").style.display = "none";
+    } else {
+      pill.classList.remove("on");
+      pill.innerHTML = `<span class="dot"></span> Гость`;
+      $("authToggleBtn").style.display = "inline-block";
+      $("logoutBtn").style.display = "none";
+    }
+  }
+
+  $("authToggleBtn").addEventListener("click", () => {
+    $("authSection").style.display = $("authSection").style.display === "none" ? "block" : "none";
+  });
+  $("logoutBtn").addEventListener("click", () => {
+    state.token = null;
+    state.userEmail = null;
+    setAuthUI();
+    renderBookings([]);
+    showMsg($("bookingsMsg"), "Вы вышли из аккаунта. Войдите, чтобы увидеть свои билеты.", "error");
+  });
+
+  document.querySelectorAll(".auth-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".auth-tab").forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      const isLogin = tab.dataset.tab === "login";
+      $("loginForm").style.display = isLogin ? "flex" : "none";
+      $("registerForm").style.display = isLogin ? "none" : "flex";
+      showMsg($("authMsg"), "", "");
+    });
+  });
+
+  $("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = $("loginEmail").value;
+    const password = $("loginPassword").value;
+    const btn = e.target.querySelector("button");
+    btn.disabled = true;
+    try{
+      const form = new URLSearchParams();
+      form.set("username", email);
+      form.set("password", password);
+      const data = await api("/auth/login", {method:"POST", body: form, form:true});
+      state.token = data.access_token;
+      state.userEmail = email;
+      showMsg($("authMsg"), "", "");
+      setAuthUI();
+      loadMyBookings();
+    }catch(err){
+      showMsg($("authMsg"), err.detail || "Не удалось войти", "error");
+    }finally{
+      btn.disabled = false;
+    }
+  });
+
+  $("registerForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = $("regEmail").value;
+    const password = $("regPassword").value;
+    const btn = e.target.querySelector("button");
+    btn.disabled = true;
+    try{
+      await api("/auth/register", {method:"POST", body:{email, password}});
+      showMsg($("authMsg"), "Аккаунт создан. Теперь войдите.", "ok");
+      document.querySelector('.auth-tab[data-tab="login"]').click();
+      $("loginEmail").value = email;
+    }catch(err){
+      showMsg($("authMsg"), err.detail || "Не удалось зарегистрироваться", "error");
+    }finally{
+      btn.disabled = false;
+    }
+  });
+
+  // ---------- movies ----------
+  async function loadMovies(){
+    showMsg($("moviesMsg"), "", "");
+    $("moviesGrid").innerHTML = `<div class="empty">Загрузка…</div>`;
+    try{
+      const [movies, halls] = await Promise.all([
+        api("/movies/?skip=0&limit=100"),
+        api("/halls/?skip=0&limit=100").catch(() => [])
+      ]);
+      state.movies = movies;
+      state.halls = {};
+      halls.forEach(h => state.halls[h.id] = h.name);
+      renderMovies();
+    }catch(err){
+      $("moviesGrid").innerHTML = "";
+      showMsg($("moviesMsg"), err.detail || "Не удалось загрузить фильмы", "error");
+    }
+  }
+
+  function renderMovies(){
+    const grid = $("moviesGrid");
+    if (!state.movies.length){
+      grid.innerHTML = `<div class="empty">Фильмов пока нет. Добавьте их через админский эндпоинт /movies/.</div>`;
+      return;
+    }
+    grid.innerHTML = state.movies.map(m => `
+      <div class="movie-card ${state.activeMovieId===m.id?'active':''}" data-id="${m.id}">
+        <div class="poster" style="${posterStyle(m.title)}"><span class="letter">${letterFor(m.title)}</span></div>
+        <div class="movie-body">
+          <div class="title">${escapeHtml(m.title)}</div>
+          <div class="meta">${m.duration_minutes} мин</div>
+        </div>
+      </div>
+    `).join("");
+    grid.querySelectorAll(".movie-card").forEach(card => {
+      card.addEventListener("click", () => loadShowtimes(parseInt(card.dataset.id, 10)));
+    });
+  }
+
+  $("refreshMoviesBtn").addEventListener("click", loadMovies);
+
+  // ---------- showtimes ----------
+  async function loadShowtimes(movieId){
+    state.activeMovieId = movieId;
+    renderMovies();
+    const movie = state.movies.find(m => m.id === movieId);
+    $("showtimesSection").style.display = "block";
+    $("bookingSection").style.display = "none";
+    $("showtimesTitle").textContent = movie ? movie.title : ("Фильм #" + movieId);
+    $("showtimeChips").innerHTML = `<div class="empty">Загрузка сеансов…</div>`;
+    showMsg($("showtimesMsg"), "", "");
+    $("showtimesSection").scrollIntoView({behavior:"smooth", block:"start"});
+    try{
+      const showtimes = await api(`/showtimes/?movie_id=${movieId}&skip=0&limit=100`);
+      renderShowtimes(showtimes);
+    }catch(err){
+      $("showtimeChips").innerHTML = "";
+      showMsg($("showtimesMsg"), err.detail || "Не удалось загрузить сеансы", "error");
+    }
+  }
+
+  function renderShowtimes(list){
+    const wrap = $("showtimeChips");
+    if (!list.length){
+      wrap.innerHTML = `<div class="empty">На этот фильм пока нет сеансов.</div>`;
+      return;
+    }
+    wrap.innerHTML = list.map(s => `
+      <div class="chip" data-id="${s.id}" data-hall="${s.hall_id}">
+        <span class="time">${fmtTime(s.start_time)}</span>
+        <span class="hall">${escapeHtml(state.halls[s.hall_id] || ("Зал #" + s.hall_id))}</span>
+      </div>
+    `).join("");
+    wrap.querySelectorAll(".chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        wrap.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+        openBooking(parseInt(chip.dataset.id, 10), parseInt(chip.dataset.hall, 10));
+      });
+    });
+  }
+
+  $("closeShowtimesBtn").addEventListener("click", () => {
+    $("showtimesSection").style.display = "none";
+    $("bookingSection").style.display = "none";
+    state.activeMovieId = null;
+    renderMovies();
+  });
+
+  // ---------- booking ----------
+  async function openBooking(showtimeId, hallId){
+    state.activeShowtime = showtimeId;
+    state.activeHall = hallId;
+    state.selectedSeatId = null;
+    showMsg($("bookingMsg"), "", "");
+    $("selectedSeatLabel").textContent = "Место не выбрано";
+    $("confirmBookingBtn").disabled = true;
+    $("bookingSection").style.display = "block";
+    $("bookingSection").scrollIntoView({behavior:"smooth", block:"center"});
+    await loadSeats(hallId, showtimeId);
+  }
+
+  async function loadSeats(hallId, showtimeId){
+    const wrap = $("seatMapWrap");
+    wrap.innerHTML = `<div class="empty">Загрузка схемы зала…</div>`;
+    try{
+      const seats = await api(`/seats/?hall_id=${hallId}&showtime_id=${showtimeId}`);
+      renderSeatMap(seats);
+    }catch(err){
+      wrap.innerHTML = `<div class="empty">Не удалось загрузить места: ${err.detail || "ошибка"}</div>`;
+    }
+  }
+
+  function renderSeatMap(seats){
+    const wrap = $("seatMapWrap");
+    if (!seats.length){
+      wrap.innerHTML = `<div class="empty">Для этого зала ещё не созданы места (POST /seats/hall/{hall_id}/generate).</div>`;
+      return;
+    }
+    // сохраняем выбор, если он всё ещё свободен после перезагрузки карты
+    const keepSelected = state.selectedSeatId;
+    const rows = {};
+    seats.forEach(s => { (rows[s.row] = rows[s.row] || []).push(s); });
+    const rowNums = Object.keys(rows).map(Number).sort((a,b) => a-b);
+
+    let html = `<div class="screen"></div><div class="screen-label">экран</div>`;
+    rowNums.forEach(r => {
+      const rowSeats = rows[r].sort((a,b) => a.number - b.number);
+      html += `<div class="seat-row"><span class="row-label">${r}</span>` +
+        rowSeats.map(s => {
+          const label = `Ряд ${s.row}, место ${s.number}`;
+          if (s.is_taken){
+            return `<button type="button" class="seat-btn taken" disabled title="${label} — занято">${s.number}</button>`;
+          }
+          const selected = s.id === keepSelected ? "selected" : "";
+          return `<button type="button" class="seat-btn ${selected}" data-id="${s.id}" data-label="${label}" title="${label}">${s.number}</button>`;
+        }).join("") +
+        `</div>`;
+    });
+    html += `<div class="seat-legend">
+      <span><span class="legend-swatch"></span> свободно</span>
+      <span><span class="legend-swatch selected"></span> выбрано</span>
+      <span><span class="legend-swatch taken"></span> занято</span>
+    </div>`;
+    wrap.innerHTML = html;
+
+    if (!seats.some(s => s.id === keepSelected)){
+      state.selectedSeatId = null;
+      $("selectedSeatLabel").textContent = "Место не выбрано";
+      $("confirmBookingBtn").disabled = true;
+    }
+
+    wrap.querySelectorAll(".seat-btn:not(.taken)").forEach(btn => {
+      btn.addEventListener("click", () => {
+        wrap.querySelectorAll(".seat-btn").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        state.selectedSeatId = parseInt(btn.dataset.id, 10);
+        $("selectedSeatLabel").textContent = btn.dataset.label;
+        $("confirmBookingBtn").disabled = false;
+      });
+    });
+  }
+
+  $("confirmBookingBtn").addEventListener("click", async () => {
+    if (!state.selectedSeatId){
+      showMsg($("bookingMsg"), "Выберите место на схеме", "error");
+      return;
+    }
+    if (!state.token){
+      showMsg($("bookingMsg"), "Сначала войдите в аккаунт", "error");
+      $("authSection").style.display = "block";
+      $("authSection").scrollIntoView({behavior:"smooth"});
+      return;
+    }
+    const btn = $("confirmBookingBtn");
+    btn.disabled = true;
+    try{
+      await api("/bookings/", {method:"POST", auth:true, body:{showtime_id: state.activeShowtime, seat_id: state.selectedSeatId}});
+      showMsg($("bookingMsg"), "Место забронировано.", "ok");
+      loadMyBookings();
+      state.selectedSeatId = null;
+      loadSeats(state.activeHall, state.activeShowtime);
+    }catch(err){
+      showMsg($("bookingMsg"), err.detail || "Не удалось создать бронирование", "error");
+      // если 409 — место заняли только что, обновим карту, чтобы это стало видно
+      if (err.status === 409){
+        loadSeats(state.activeHall, state.activeShowtime);
+      }
+      btn.disabled = false;
+    }
+  });
+
+  // ---------- my bookings ----------
+  async function loadMyBookings(){
+    if (!state.token){
+      renderBookings([]);
+      showMsg($("bookingsMsg"), "Войдите в аккаунт, чтобы увидеть свои билеты.", "error");
+      return;
+    }
+    showMsg($("bookingsMsg"), "", "");
+    $("bookingsWrap").innerHTML = `<div class="empty">Загрузка…</div>`;
+    try{
+      const bookings = await api("/bookings/me", {auth:true});
+      renderBookings(bookings);
+    }catch(err){
+      $("bookingsWrap").innerHTML = "";
+      showMsg($("bookingsMsg"), err.detail || "Не удалось загрузить бронирования", "error");
+    }
+  }
+
+  function renderBookings(list){
+    const wrap = $("bookingsWrap");
+    if (!list.length){
+      wrap.innerHTML = `<div class="empty">Билетов пока нет — выберите сеанс выше.</div>`;
+      return;
+    }
+    wrap.innerHTML = list.map(b => `
+      <div class="ticket">
+        <div class="ticket-main">
+          <div class="route">БРОНИРОВАНИЕ #${b.id} · СЕАНС #${b.showtime_id}</div>
+          <div class="row">
+            <div><div class="field-lbl">Место</div><div class="field-val">#${b.seat_id}</div></div>
+            <div><div class="field-lbl">Статус</div><div class="field-val"><span class="status-badge ${b.status}">${statusLabel(b.status)}</span></div></div>
+          </div>
+        </div>
+        <div class="ticket-stub">
+          ${b.status !== "cancelled" ? `<button class="small danger-btn" data-cancel="${b.id}">Отменить</button>` : `<span class="mono" style="font-size:11px;color:var(--text-muted);">—</span>`}
+        </div>
+      </div>
+    `).join("");
+    wrap.querySelectorAll("[data-cancel]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        btn.disabled = true;
+        try{
+          await api(`/bookings/${btn.dataset.cancel}/cancel`, {method:"POST", auth:true});
+          loadMyBookings();
+        }catch(err){
+          showMsg($("bookingsMsg"), err.detail || "Не удалось отменить бронирование", "error");
+          btn.disabled = false;
+        }
+      });
+    });
+  }
+
+  $("refreshBookingsBtn").addEventListener("click", loadMyBookings);
+
+  function escapeHtml(str){
+    return (str || "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---------- init ----------
+  setAuthUI();
+  loadMovies();
+  renderBookings([]);
+})();
+</script>
+</body>
+</html>

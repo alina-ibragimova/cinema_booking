@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict
-from src.models.bookings import BookingStatus
+from src.models import BookingStatus
 
 class SeatBase(BaseModel):
     row: int = Field(..., gt=0)
@@ -8,9 +8,11 @@ class SeatBase(BaseModel):
 
 class SeatRead(SeatBase):
     id: int
-    
+    is_taken: bool = False
     model_config = ConfigDict(from_attributes=True)
-
+    
+class SeatCreate(SeatBase):
+    pass
 
 class BookingBase(BaseModel):
     showtime_id: int
