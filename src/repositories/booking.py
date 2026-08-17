@@ -16,11 +16,11 @@ class BookingRepository(BaseRepository[Booking, BookingCreate]):
         result = await self.session.execute(query)
         return result.scalars().all()
     
-    async def is_seat_taken(self, showtime_id: int, seat_id: int) -> bool:
+    async def is_seat_confirmed(self, showtime_id: int, seat_id: int) -> bool:
         query = select(self.model).where(
             self.model.showtime_id == showtime_id,
             self.model.seat_id == seat_id,
-            self.model.status != BookingStatus.CANCELLED,
+            self.model.status == BookingStatus.CONFIRMED,
         )
         result = await self.session.execute(query)
         return result.scalar_one_or_none() is not None
@@ -31,12 +31,13 @@ class BookingRepository(BaseRepository[Booking, BookingCreate]):
         except IntegrityError:
             await self.session.rollback()
             return None
+    
+    async def get_confirmed_seat_ids(self, showtime_id: int) -> set[int]:
+        query = select(self.model.seat_id).where(
+            self.model.showtime_id == showtime_id,
+            self.model.status == BookingStatus.CONFIRMED,
+            # self.model.status!= BookingStatus.CANCELLED,
 
-    async def get_taken_seat_ids(self, showtime_id: int) -> set[int]:
-        result = await self.session.execute(
-            select(Booking.seat_id).where(
-                Booking.showtime_id == showtime_id,
-                Booking.status != BookingStatus.CANCELLED,
-            )
         )
-        return set(result.scalars().all()) 
+        result = await self.session.execute(query)
+        return set(result.scalars().all())

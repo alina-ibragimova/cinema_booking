@@ -1,11 +1,14 @@
 import pytest
 import pytest_asyncio
+import redis.asyncio as redis
 from httpx2 import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from src.main import app
 from src.models import Base
 from src.database import get_db
+from src.config import settings
+from src.redis_client import get_redis
 
 TEST_DB_URL = "postgresql+asyncpg://test:test@127.0.0.1:5432/cinema_test"
 
@@ -28,7 +31,17 @@ async def override_get_db():
 
 app.dependency_overrides[get_db] = override_get_db
 
-
+@pytest_asyncio.fixture(scope="session")
+async def test_redis():
+    client = redis.from_url(
+    settings.REDIS_URL.rsplit("/", 1)[0].replace("localhost", "127.0.0.1") + "/15",
+    decode_responses=True
+)
+    app.dependency_overrides[get_redis] = lambda: client
+    
+    yield client
+    
+    await client.aclose()
 
 
 
@@ -38,20 +51,20 @@ async def db_session():
         yield session
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
-async def _setup_database():
+async def _setup_database(test_redis):
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     yield
     await test_engine.dispose()
-
+    # await test_redis.aclose()
 
 @pytest_asyncio.fixture(autouse=True)
-async def _clean_tables():
+async def _clean_tables(test_redis):
     async with test_engine.begin() as conn:
         for table in reversed(Base.metadata.sorted_tables):
             await conn.execute(table.delete())
-    
+    await test_redis.flushdb()
     yield
 
 
@@ -102,3 +115,12 @@ def register_and_login(client):
         return resp.json()["access_token"]
 
     return _register_and_login
+
+@pytest_asyncio.fixture
+def short_ttl_hold_repo(test_redis):
+    from src.repositories import SeatHoldRepository
+    return SeatHoldRepository(test_redis, ttl_seconds=1)
+
+@pytest_asyncio.fixture
+async def redis_client(test_redis):
+    return test_redis

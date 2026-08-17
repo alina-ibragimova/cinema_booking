@@ -6,11 +6,12 @@ class Settings(BaseSettings):
     DB_USER: str
     DB_PASSWORD: str
     DB_NAME: str
-
-    # DATABASE_URL: str
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    
+    REDIS_URL: str = "redis://localhost:6379/0"
+    SEAT_HOLD_SECONDS: int = 300
 
     @property
     def database_url(self) -> str:

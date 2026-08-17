@@ -1,21 +1,31 @@
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.repositories import HallRepository, MovieRepository, ShowtimeRepository
+import redis.asyncio as redis
+
+from src.repositories import HallRepository, MovieRepository, ShowtimeRepository, BookingRepository, SeatRepository,SeatHoldRepository
 from src.api.dependencies import get_current_admin_user
 from src.database import get_db
-from src.schemas import ShowtimeCreate, ShowtimeRead
+from src.schemas import ShowtimeCreate, ShowtimeRead, SeatAvailability
 from src.services import ShowtimeService
- 
+from src.config import settings
+from src.redis_client import get_redis
+
 router = APIRouter(prefix="/showtimes", tags=["Сеансы"])
 
-def get_showtime_service(db: AsyncSession = Depends(get_db))->ShowtimeService:
+def get_showtime_service(
+    db: AsyncSession = Depends(get_db),
+    redis_client: redis.Redis = Depends(get_redis),
+) -> ShowtimeService:
     return ShowtimeService(
-        repo = ShowtimeRepository(db),
-        movie_repo = MovieRepository(db),
-        hall_repo = HallRepository(db),
+        repo=ShowtimeRepository(db),
+        movie_repo=MovieRepository(db),
+        hall_repo=HallRepository(db),
+        seat_repo=SeatRepository(db),
+        booking_repo=BookingRepository(db),
+        hold_repo=SeatHoldRepository(redis_client, settings.SEAT_HOLD_SECONDS),
     )
- 
+
 @router.get("/", response_model=list[ShowtimeRead])
 async def list_showtimes(
     movie_id: int | None = None,
@@ -29,7 +39,12 @@ async def list_showtimes(
 @router.get("/{showtime_id}", response_model=ShowtimeRead)
 async def get_showtime(showtime_id: int, service: ShowtimeRepository=Depends(get_showtime_service),):
     return await service.get(showtime_id)
- 
+
+@router.get("/{showtime_id}/seats", response_model=list[SeatAvailability])
+async def get_showtime_seats(showtime_id: int, service: ShowtimeService = Depends(get_showtime_service)):
+    return await service.get_seat_map(showtime_id)
+
+
  
 @router.post("/", response_model=ShowtimeRead, status_code=status.HTTP_201_CREATED)
 async def create_showtime(

@@ -22,8 +22,8 @@ class SeatService:
 
         taken_ids: set[int] = set()
         if showtime_id is not None:
-            taken_ids = await self.booking_repo.get_taken_seat_ids(showtime_id)
-
+            # taken_ids = await self.booking_repo.get_taken_seat_ids(showtime_id)
+            taken_ids = await self.booking_repo.get_confirmed_seat_ids(showtime_id)
         return [
             SeatRead(id=s.id, row=s.row, number=s.number, hall_id=s.hall_id, is_taken=s.id in taken_ids)
             for s in seats

@@ -14,6 +14,10 @@ class SeatRead(SeatBase):
 class SeatCreate(SeatBase):
     pass
 
+class SeatAvailability(SeatBase):
+    id: int
+    is_available: bool
+
 class BookingBase(BaseModel):
     showtime_id: int
     seat_id: int

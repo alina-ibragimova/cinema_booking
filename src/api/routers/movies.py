@@ -9,7 +9,6 @@ from src.services import MovieService
 router = APIRouter(prefix="/movies", tags=["Фильмы"])
 
 def get_movies_service(db: AsyncSession = Depends(get_db)) -> MovieService:
-    # return AuthService(db)
     return MovieService(MovieRepository(db))
 
 

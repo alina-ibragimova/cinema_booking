@@ -10,8 +10,7 @@ from src.schemas import UserCreate, UserRead, Token
 router = APIRouter(prefix="/auth", tags=["Авторизация"])
 
 def get_auth_service(db: AsyncSession = Depends(get_db)) -> AuthService:
-    # return AuthService(db)
-        return AuthService(UserRepository(db))
+    return AuthService(UserRepository(db))
 
 
 @router.post("/register",response_model=UserRead,status_code=status.HTTP_201_CREATED)

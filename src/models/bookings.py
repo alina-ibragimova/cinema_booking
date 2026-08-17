@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import Integer, ForeignKey, String, Enum, UniqueConstraint
+from sqlalchemy import Integer, ForeignKey, String, Enum, UniqueConstraint, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base
 
@@ -29,5 +29,14 @@ class Booking(Base):
     showtime: Mapped["Showtime"] = relationship(back_populates="bookings")
     seat: Mapped["Seat"] = relationship(back_populates="bookings")
 
+    __table_args__ = (
+        Index(
+            "uq_active_booking_per_seat",
+            "showtime_id",
+            "seat_id",
+            unique=True,
+            postgresql_where=(status == BookingStatus.CONFIRMED),
+        ),
+    )
 
     
